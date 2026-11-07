@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>RES Arıza Kaydı</title>
+<meta name="theme-color" content="#14263B">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --lacivert:#14263B;
+    --celik:#3E5871;
+    --ruzgar:#1178A8;
+    --ruzgar-acik:#E3F1F7;
+    --zemin:#F2F4F6;
+    --kart:#FFFFFF;
+    --cizgi:#D8DEE4;
+    --metin:#1C2733;
+    --soluk:#68788A;
+    --yesil:#1E7F4F;
+    --kirmizi:#B4442E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--zemin);color:var(--metin);
+    -webkit-font-smoothing:antialiased;
+  }
+  .sayfa{max-width:520px;margin:0 auto;padding-bottom:110px}
+
+  /* ---------- Başlık ---------- */
+  header{
+    background:var(--lacivert);color:#fff;
+    padding:20px 20px 18px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .logo-kutu{flex:none;background:#fff;border-radius:10px;width:54px;height:54px;
+    display:flex;align-items:center;justify-content:center;padding:5px}
+  .logo-kutu img{max-width:100%;max-height:100%;display:block}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#9DB4C8;margin-bottom:3px}
+  h1{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+  .alt-baslik{font-size:12px;color:#9DB4C8;margin-top:3px}
+
+  /* ---------- Bölümler ---------- */
+  .bolum{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;margin:14px 14px 0;padding:16px}
+  label.baslik{display:block;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--celik);margin-bottom:10px}
+  .zorunlu::after{content:" *";color:var(--kirmizi)}
+
+  input[type=date],input[type=time],select,textarea,input[type=text]{
+    width:100%;border:1.5px solid var(--cizgi);border-radius:10px;
+    padding:13px 14px;font-size:16px;font-family:inherit;color:var(--metin);
+    background:#fff;appearance:none;-webkit-appearance:none;
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ruzgar)}
+  textarea{min-height:72px;resize:vertical}
+  .satir2{display:flex;gap:10px}
+  .satir2>div{flex:1}
+  .alt-etiket{font-size:12px;color:var(--soluk);margin-bottom:6px}
+
+  /* ---------- Arıza arama ---------- */
+  .arama-kutu{position:relative}
+  #arizaArama{padding-left:40px}
+  .arama-ikon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--soluk)}
+  #sonuclar{
+    margin-top:8px;border:1px solid var(--cizgi);border-radius:10px;
+    max-height:240px;overflow-y:auto;display:none;background:#fff;
+  }
+  .sonuc{
+    display:flex;gap:10px;align-items:baseline;
+    padding:12px 14px;border-bottom:1px solid var(--zemin);cursor:pointer;
+  }
+  .sonuc:last-child{border-bottom:none}
+  .sonuc:active{background:var(--ruzgar-acik)}
+  .sonuc .kod{font-weight:800;color:var(--ruzgar);font-variant-numeric:tabular-nums;flex:none;min-width:34px}
+  .sonuc .ad{font-size:14px;line-height:1.35}
+  .bos-sonuc{padding:14px;font-size:14px;color:var(--soluk)}
+
+  .secili-ariza{
+    display:none;margin-top:10px;
+    background:var(--ruzgar-acik);border:1.5px solid var(--ruzgar);
+    border-radius:10px;padding:12px 14px;
+    align-items:baseline;gap:10px;
+  }
+  .secili-ariza .kod{font-weight:800;color:var(--ruzgar);flex:none}
+  .secili-ariza .ad{font-size:14px;flex:1;line-height:1.35}
+  .secili-ariza button{
+    flex:none;border:none;background:none;color:var(--celik);
+    font-size:22px;line-height:1;padding:0 2px;cursor:pointer;align-self:center;
+  }
+  .diger-satir{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--soluk)}
+  .diger-satir input[type=checkbox]{width:20px;height:20px;accent-color:var(--ruzgar)}
+  #digerAlan{display:none;margin-top:10px}
+
+  /* ---------- Çipler ---------- */
+  .cipler{display:flex;flex-wrap:wrap;gap:8px}
+  .cip{
+    border:1.5px solid var(--cizgi);border-radius:999px;background:#fff;
+    padding:10px 15px;font-size:14px;font-family:inherit;color:var(--metin);cursor:pointer;
+  }
+  .cip.aktif{background:var(--lacivert);border-color:var(--lacivert);color:#fff}
+  .hizli-cip{border-style:dashed;color:var(--celik)}
+  .hizli-cip.aktif{background:var(--celik);border-color:var(--celik);border-style:solid;color:#fff}
+  #ekPersonel{margin-top:10px}
+  #personelSonuclar{margin-top:8px;border:1px solid var(--cizgi);border-radius:10px;
+    max-height:220px;overflow-y:auto;display:none;background:#fff}
+  .p-sonuc{padding:12px 14px;border-bottom:1px solid var(--zemin);cursor:pointer;font-size:15px}
+  .p-sonuc:last-child{border-bottom:none}
+  .p-sonuc:active{background:var(--ruzgar-acik)}
+  .p-cip{display:inline-flex;align-items:center;gap:8px;
+    background:var(--lacivert);color:#fff;border-radius:999px;
+    padding:9px 10px 9px 15px;font-size:14px}
+  .p-cip button{border:none;background:rgba(255,255,255,.18);color:#fff;
+    width:22px;height:22px;border-radius:50%;font-size:14px;line-height:1;cursor:pointer}
+
+  /* ---------- Gönder ---------- */
+  .gonder-bar{
+    position:fixed;bottom:0;left:0;right:0;
+    background:linear-gradient(to top,var(--zemin) 65%,transparent);
+    padding:18px 14px 20px;
+  }
+  .gonder-bar .ic{max-width:520px;margin:0 auto}
+  #kaydetBtn{
+    width:100%;border:none;border-radius:12px;
+    background:var(--yesil);color:#fff;
+    font-size:17px;font-weight:700;font-family:inherit;
+    padding:16px;cursor:pointer;
+  }
+  #kaydetBtn:disabled{background:#9BB3A6}
+  .hata{display:none;margin:12px 14px 0;background:#FBEAE5;border:1px solid var(--kirmizi);
+    color:var(--kirmizi);border-radius:10px;padding:12px 14px;font-size:14px}
+
+  /* ---------- Başarı ekranı ---------- */
+  #basari{display:none;text-align:center;padding:70px 30px}
+  #basari .halka{
+    width:74px;height:74px;border-radius:50%;background:var(--yesil);
+    color:#fff;font-size:36px;line-height:74px;margin:0 auto 18px;
+  }
+  #basari h2{font-size:20px;margin-bottom:8px}
+  #basari p{color:var(--soluk);font-size:14px;margin-bottom:26px}
+  #yeniKayit{
+    border:1.5px solid var(--lacivert);background:#fff;color:var(--lacivert);
+    border-radius:12px;padding:14px 30px;font-size:16px;font-weight:700;
+    font-family:inherit;cursor:pointer;
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .sonuc,.cip,#kaydetBtn{transition:background .12s,border-color .12s,color .12s}
+  }
+</style>
+</head>
+<body>
+<div class="sayfa">
+
+  <header>
+    <div class="logo-kutu" style="font-size:26px">🌬️</div>
+    <div>
+      <div class="eyebrow">Örnek RES</div>
+      <h1>Rüzgar Enerji Üretim</h1>
+      <div class="alt-baslik">Arıza Müdahale Kaydı</div>
+    </div>
+  </header>
+
+  <div id="form">
+
+    <div class="bolum">
+      <label class="baslik zorunlu" for="tarih">Tarih</label>
+      <input type="date" id="tarih">
+    </div>
+
+    <div class="bolum">
+      <label class="baslik zorunlu" for="turbin">Türbin No</label>
+      <select id="turbin">
+        <option value="">Türbin seçin…</option>
+      </select>
+    </div>
+
+    <div class="bolum">
+      <label class="baslik zorunlu" for="arizaArama">Arıza Türü</label>
+      <div class="arama-kutu">
+        <span class="arama-ikon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <input type="text" id="arizaArama" inputmode="text"
+               placeholder="Kod veya arıza adı yazın (örn. 242)" autocomplete="off">
+      </div>
+      <div id="sonuclar"></div>
+      <div class="secili-ariza" id="seciliAriza">
+        <span class="kod" id="seciliKod"></span>
+        <span class="ad" id="seciliAd"></span>
+        <button type="button" id="temizleBtn" aria-label="Seçimi kaldır">&times;</button>
+      </div>
+      <div class="diger-satir">
+        <input type="checkbox" id="digerCheck">
+        <label for="digerCheck">Listede yok / diğer arıza</label>
+      </div>
+      <div id="digerAlan">
+        <input type="text" id="arizaDiger" placeholder="Arızayı kısaca yazın">
+      </div>
+    </div>
+
+    <div class="bolum">
+      <label class="baslik" for="aciklama">Açıklama</label>
+      <div class="cipler" style="margin-bottom:10px">
+        <button type="button" class="cip hizli-cip" data-metin="Arıza Giderildi">Arıza Giderildi</button>
+        <button type="button" class="cip hizli-cip" data-metin="Eksik Parça Olduğundan Dolayı Çalışma Tamamlanamadı">Parça Eksik</button>
+        <button type="button" class="cip hizli-cip" data-metin="Sorun Halledilmedi, Yarın Tekrar Gidilecek">Yarın Tekrar</button>
+        <button type="button" class="cip hizli-cip" data-metin="Hava Muhalefeti Nedeni ile Çalışma Yapılamadı">Hava Koşulları</button>
+      </div>
+      <textarea id="aciklama" placeholder="Not ekleyin (isteğe bağlı)"></textarea>
+    </div>
+
+    <div class="bolum">
+      <label class="baslik zorunlu">Müdahale Eden Kişiler</label>
+      <div class="cipler" id="personelSecili" style="margin-bottom:10px"></div>
+      <div class="arama-kutu">
+        <span class="arama-ikon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <input type="text" id="personelArama" placeholder="    İsim yazın, listeden seçin" autocomplete="off">
+      </div>
+      <div id="personelSonuclar"></div>
+      <input type="text" id="ekPersonel" placeholder="Listede olmayan kişi (isteğe bağlı)" style="margin-top:10px">
+    </div>
+
+    <div class="bolum">
+      <label class="baslik zorunlu">Müdahale Saatleri</label>
+      <div class="satir2">
+        <div>
+          <div class="alt-etiket">Başlangıç</div>
+          <input type="time" id="baslangic">
+        </div>
+        <div>
+          <div class="alt-etiket">Bitiş</div>
+          <input type="time" id="bitis">
+        </div>
+      </div>
+    </div>
+
+    <div class="hata" id="hataKutu"></div>
+  </div>
+
+  <div id="basari">
+    <div class="halka">&#10003;</div>
+    <h2>Kayıt alındı</h2>
+    <p id="basariDetay"></p>
+    <button type="button" id="yeniKayit">Yeni Kayıt Gir</button>
+  </div>
+
+</div>
+
+<div class="gonder-bar" id="gonderBar">
+  <div class="ic">
+    <button type="button" id="kaydetBtn">Kaydı Gönder</button>
+  </div>
+</div>
+
+<script>
+/* ============ ARIZA KODLARI (GE Status Messages) ============ */
+var ARIZALAR = [{"k":"01","t":"PROGRAM START PLC"},{"k":"02","t":"NO ERRORS"},{"k":"03","t":"MANUAL STOP"},{"k":"04","t":"REMOTE STOP"},{"k":"05","t":"REMOTE START"},{"k":"06","t":"SYSTEM OK"},{"k":"07","t":"STORM SHUTDOWN"},{"k":"08","t":"OVERVOLTAGE"},{"k":"09","t":"UNDERVOLTAGE"},{"k":"13","t":"ASYMMETRIC GENERATOR CURRENT"},{"k":"14","t":"GENERATOR OVERSPEED"},{"k":"15","t":"ROTOR OVERSPEED"},{"k":"16","t":"SPEED DETECTOR AT THE ROTOR SIDE"},{"k":"17","t":"CENTRIFUGAL SWITCH"},{"k":"18","t":"OVERPRODUCTION"},{"k":"19","t":"MAXIMUM MOTOR POWER"},{"k":"20","t":"CABLE TWISTING RIGHT"},{"k":"21","t":"CABLE TWISTING LEFT"},{"k":"22","t":"YAW DRIVE STOP POSITION"},{"k":"23","t":"EXCESSIVE OUTPUT PEAK VALUE"},{"k":"24","t":"PRIMARY BRAKING TIME TOO HIGH"},{"k":"25","t":"NO REDUCTION OF SPEED WHEN BRAKING WITH PRIMARY BRAKE"},{"k":"27","t":"SECONDARY BRAKING TIME TOO HIGH"},{"k":"28","t":"NO SPEED REDUCTION WITH SECONDARY BRAKING"},{"k":"31","t":"TIME-OUT YAW COUNTER"},{"k":"34","t":"BRAKE NOT RELEASED SECONDARY BRAKE"},{"k":"35","t":"EMERGENCY STOP TOWER BASE / CONTAINER"},{"k":"36","t":"SPEED WITH BRAKED TURBINE"},{"k":"37","t":"PRIMARY BRAKE TEST"},{"k":"38","t":"SECONDARY BRAKE TEST"},{"k":"41","t":"VIBRATION DETECTOR DEFECT"},{"k":"42","t":"WRONG YAW DIRECTION OF ROTATION"},{"k":"45","t":"HYDRAULIC PUMP TIME TOO HIGH"},{"k":"46","t":"HYDRAULIC PUMP TIME TOO LOW"},{"k":"47","t":"SERVICE SWITCH HYDRAULIC TOP CABINET"},{"k":"51","t":"GEARBOX OIL LEVEL TOO LOW"},{"k":"52","t":"GEARBOX OIL PRESSURE TOO LOW"},{"k":"53","t":"WIND VANE DEFECT"},{"k":"54","t":"ANEMOMETER DEFECT"},{"k":"55","t":"ROTOR IMPULSE SENSOR DEFECT"},{"k":"56","t":"GENERATOR IMPULSE SENSOR DEFECT"},{"k":"57","t":"RATIO GENERATOR-/ROTOR SPEED"},{"k":"58","t":"DEMAND TO STOP BY AN EXTERNAL DEVICE"},{"k":"59","t":"VIBRATION SWITCH"},{"k":"60","t":"YAW LIMIT SWITCH ACTIVATED"},{"k":"61","t":"BUFFER BATTERY PLC"},{"k":"62","t":"PLC FAULT COLLECTION"},{"k":"63","t":"SAFETY CHAIN"},{"k":"64","t":"MOTOR PROTECTION"},{"k":"65","t":"MAIN SWITCH RELEASED"},{"k":"71","t":"GEARBOX OIL FILTER DIRTY (SHUTDOWN)"},{"k":"72","t":"GEARBOX OIL TEMPERATURE SWITCHING CONTACT"},{"k":"75","t":"GENERATOR BEARING A OVERTEMPERATURE"},{"k":"76","t":"GENERATOR BEARING B OVERTEMPERATURE"},{"k":"77","t":"GEARBOX OIL OVERTEMPERATURE"},{"k":"78","t":"OUTSIDE TEMPERATURE TOO LOW"},{"k":"81","t":"SHAFT BEARING OVERTEMPERATURE"},{"k":"82","t":"YAW MOTOR OVERTEMPERATURE"},{"k":"83","t":"GEARBOX BEARING B OVERTEMPERATURE"},{"k":"84","t":"GEARBOX OIL TEMPERATURE TOO LOW"},{"k":"86","t":"BRAKING PAD OF SECONDARY BRAKE WORN OUT"},{"k":"87","t":"RESTART TIME DELAY"},{"k":"88","t":"MULTIPLE OVERTEMPERATURE SWITCH OFF"},{"k":"89","t":"GEARBOX OIL FILTER DIRTY (WARNING)"},{"k":"91","t":"GEARBOX RUNNING HOT IN LOW GENERATOR STAGE"},{"k":"94","t":"CONTROL CALL"},{"k":"95","t":"PC RESTART"},{"k":"96","t":"SLIP RING DEVICE OVERTEMPERATURE"},{"k":"97","t":"GENERATOR COOLING AIR OVERTEMPERATURE"},{"k":"98","t":"GEARBOX BEARING OVERTEMPERATURE"},{"k":"99","t":"GENERATOR OVERTEMPERATURE 1"},{"k":"100","t":"GENERATOR OVERTEMPERATURE 2"},{"k":"101","t":"MOTOR PROTECTION FUSES"},{"k":"102","t":"MOTOR PROTECTION TOP CABINET"},{"k":"103","t":"GENERATOR OVERTEMPERATURE RELAY CONTACT"},{"k":"105","t":"GENERATOR SIDE CCU FAULT VOLTAGE"},{"k":"106","t":"GENERATOR SIDE CCU FAULT CURRENT"},{"k":"107","t":"GENERATOR SIDE CCU FAULT TEMPERATURE"},{"k":"108","t":"ROTOR LOCKING"},{"k":"109","t":"GENERATOR CARBON DUST FILTER DIRTY"},{"k":"110","t":"SPEED IN THE TOWER RESONANCE RANGE"},{"k":"112","t":"FEEDBACK SIGNAL FROM CCU"},{"k":"113","t":"LINE CCU FAULT VOLTAGE"},{"k":"114","t":"LINE CCU FAULT CURRENT"},{"k":"115","t":"LINE CCU FAULT TEMPERATURE"},{"k":"116","t":"LINE FAULT VOLTAGE"},{"k":"117","t":"LINE FAULT FREQUENCY"},{"k":"118","t":"EMERGENCY STOP TOP NACELLE / HUB"},{"k":"119","t":"TIMEOUT PITCH CONTROLLER"},{"k":"120","t":"COMMUNICATION FAULT PITCH CONTROLLER"},{"k":"121","t":"AXIS 1 FAULT PITCH CONTROLLER"},{"k":"122","t":"COLLECTIVE FAULT PITCH CONTROLLER"},{"k":"123","t":"GEARBOX COOLER SWITCHING CONTACT"},{"k":"124","t":"PITCH OVERRUN 0°"},{"k":"125","t":"PITCH OVERRUN 90°"},{"k":"126","t":"YAW SOFT START FAULT"},{"k":"127","t":"GENERATOR POWER SWITCH"},{"k":"129","t":"GENERATOR SPEED NOT PLAUSIBLE"},{"k":"130","t":"BRAKING TIME ROTOR BLADE 1 TOO HIGH"},{"k":"131","t":"BRAKING TIME ROTOR BLADE 2 TOO HIGH"},{"k":"132","t":"BRAKING TIME ROTOR BLADE 3 TOO HIGH"},{"k":"133","t":"BATTERY CHARGING ROTOR BLADE DRIVE"},{"k":"134","t":"BATTERY CHARGING VOLTAGE NOT OK"},{"k":"135","t":"EMERGENCY BRAKING SYSTEM TEST"},{"k":"136","t":"LIMIT SWITCH 0° ROTORBLADE ANGLE UNCLEAR"},{"k":"137","t":"LIMIT SWITCH ROTOR BLADE 90° DEFECTIVE"},{"k":"138","t":"TEMPERATURE WARNING PITCH MOTOR"},{"k":"139","t":"OVERTEMPERATURE PITCH MOTOR"},{"k":"140","t":"MOTOR PROTECTION PITCH MOTOR"},{"k":"141","t":"GENERATOR SIDE CCU COLLECTIVE FAULTS"},{"k":"142","t":"LINE CCU COLLECTIVE FAULTS"},{"k":"143","t":"PULSE SENSOR ROTOR MONITOR DEFECT"},{"k":"144","t":"BLADE ANGLE ASYMMETRY"},{"k":"145","t":"BLADE PITCH CONTROL DEVIATION"},{"k":"146","t":"TURBINE STOPPED DUE TO CALM"},{"k":"147","t":"LOAD SHUTDOWN"},{"k":"148","t":"GENERATOR FAN SERVICE SWITCH"},{"k":"149","t":"AXIS 2 FAULT PITCH CONTROLLER"},{"k":"150","t":"AXIS 3 FAULT PITCH CONTROLLER"},{"k":"151","t":"REPLY CIRCUIT BREAKER GENERATOR BRUSH"},{"k":"152","t":"OBSTRUCTION LIGHT FAULT / FAILURE"},{"k":"153","t":"GENERATOR BRUSHES WORN"},{"k":"154","t":"RESERVED"},{"k":"155","t":"MAINTENANCE"},{"k":"156","t":"REPAIR"},{"k":"157","t":"BRAKE DOES NOT CLOSE"},{"k":"161","t":"OVERVOLTAGE PROTECTION TRIGGERED"},{"k":"162","t":"FAULT BATTERY CHARGE SWITCHING"},{"k":"163","t":"TORQUE DEVIATION"},{"k":"164","t":"MAINTENANCE SWITCH PITCH"},{"k":"165","t":"SERVICE SWITCH PITCH"},{"k":"166","t":"NORMAL OPERATION"},{"k":"167","t":"VOLTAGE LIMITING ACTIVATED"},{"k":"168","t":"YAW EMERGENCY STOP"},{"k":"169","t":"WAITING FOR GEARBOX OIL PRESSURE"},{"k":"170","t":"INCREASING SPEED WITH FALLING BLADE ANGLE"},{"k":"171","t":"SERVICE KEY BRAKE RELEASE"},{"k":"172","t":"ICE SENSOR ALARM"},{"k":"173","t":"LOW-NOISE OPERATION"},{"k":"174","t":"OVERTEMPERATURE TRANSFORMER WARNING"},{"k":"175","t":"OVERTEMPERATURE TRANSFORMER DISTURBANCE"},{"k":"176","t":"DRIVE TRAIN VIBRATION"},{"k":"177","t":"TOWER VIBRATION"},{"k":"178","t":"FAULT BATTERY CHARGE SWITCHING SHUT DOWN"},{"k":"179","t":"SUCCESSFUL EMERGENCY BRAKING SYSTEM TEST IS NEEDED"},{"k":"180","t":"WIND DEVIATION"},{"k":"181","t":"IDLING POSITION"},{"k":"182","t":"START-UP"},{"k":"183","t":"LOAD OPERATION"},{"k":"184","t":"SHUT DOWN"},{"k":"185","t":"MANUAL OPERATION PITCH"},{"k":"186","t":"MANUAL OPERATION SPEED"},{"k":"187","t":"MANUAL OPERATION TORQUE"},{"k":"188","t":"MANUAL OPERATION LINE SEPARATION"},{"k":"189","t":"MANUAL OPERATION YAW"},{"k":"190","t":"TEMPERATURE ERROR CONTAINER/NACELLE"},{"k":"191","t":"MANUAL OPERATION GENERATOR FAN"},{"k":"192","t":"WRONG PARAMETER CHECK SUM"},{"k":"194","t":"BY-PASS FILTER SOILING"},{"k":"195","t":"GEARBOX PRESSURE LOSS BY-PASS FILTER"},{"k":"196","t":"PRE-HEATING FAULT CCU COOLING SYSTEM"},{"k":"197","t":"OVERTEMPERATURE CCU COOLING SYSTEM"},{"k":"201","t":"PLC FAULT 24V POWER SUPPLY"},{"k":"202","t":"PLC MODULE FAILURE"},{"k":"203","t":"FAULT TEMPERATURE MEASUREMENT"},{"k":"204","t":"FAST BUS SERVICEMODE"},{"k":"205","t":"OVERTEMPERATURE TOPBOX"},{"k":"206","t":"GEAR PRESSURE TOO HIGH"},{"k":"207","t":"GROUND FAULT LVMD"},{"k":"208","t":"NO ACTIVITY CAN-BUS CCU"},{"k":"209","t":"NO ACTIVITY CAN-BUS MFR13"},{"k":"210","t":"TIMEOUT DECENTRAL BOX"},{"k":"212","t":"BATTERY VOLTAGE LOW AXIS 1"},{"k":"213","t":"BATTERY VOLTAGE LOW AXIS 2"},{"k":"214","t":"BATTERY VOLTAGE LOW AXIS 3"},{"k":"215","t":"DIRECTION DEPENDENT SHUT-DOWN"},{"k":"216","t":"OBSTRUCTION LIGHTS SWITCH-OVER TO AUXILIARY LAMPS"},{"k":"217","t":"END OF PARAMETER STATE SERVICE"},{"k":"218","t":"FREQUENT CUT-INS"},{"k":"219","t":"ICE SENSOR FAULT"},{"k":"220","t":"EXTERNAL STOP CAUSED BY CURTAILMENT"},{"k":"221","t":"RECEIVING EXTERNAL POWER COMMAND"},{"k":"222","t":"YAW RUNAWAY"},{"k":"223","t":"IMPLAUSIBLE BLADE ANGLE AXIS 1"},{"k":"224","t":"FEEDBACK ERROR CIRCUIT BREAKER"},{"k":"225","t":"GEAR OIL LEVEL WARNING"},{"k":"226","t":"UPS 24V MONITORING"},{"k":"227","t":"PULSE GENERATOR STANDSTILL DETECTOR DEFECTIVE"},{"k":"228","t":"TEMPERATURE WARNING 2. PITCH MOTOR"},{"k":"229","t":"OVERTEMPERATURE 2. PITCH MOTOR"},{"k":"230","t":"MOTOR PROTECTION DEVICE HUB"},{"k":"231","t":"MOTOR PROTECTION DEVICE / FUSE MAIN CABINET"},{"k":"232","t":"MOTOR PROTECTION DEVICE / FUSE TOWER CABINET"},{"k":"233","t":"MOTOR PROTECTION DEVICE / FUSE TOP CABINET 400V"},{"k":"234","t":"MOTOR PROTECTION DEVICE / FUSE YAW CABINET"},{"k":"235","t":"POWER CIRCUIT BREAKER CCU RELEASED"},{"k":"236","t":"POWER CIRCUIT BREAKER MHVS RELEASED"},{"k":"237","t":"GENERATOR 3 OVERTEMPERATURE"},{"k":"238","t":"OPEN PLANT-CB"},{"k":"239","t":"OPEN PARK-CB"},{"k":"240","t":"ANEMOMETER DEVIATION"},{"k":"241","t":"WIND VANE DEVIATION"},{"k":"242","t":"YAW HYDRAULIC PUMP TIME TOO LONG"},{"k":"243","t":"YAW HYDRAULIC PUMP INTERVAL TIME TOO SHORT"},{"k":"244","t":"MOTOR PROTECTION / FUSE MAIN CABINET WARNING"},{"k":"245","t":"MOTOR PROTECTION / FUSE TOPBOX WARNING"},{"k":"246","t":"TIMEOUT VIBRATION MONITOR"},{"k":"247","t":"CABLE SUPERVISION PITCH MOTOR"},{"k":"248","t":"MBL FAILURE PUMP 1 AND 2"},{"k":"249","t":"CONDITION MONITORING TORQUE WARNING"},{"k":"250","t":"TEMPERATURE SENSOR ERROR (SHUT-DOWN)"},{"k":"251","t":"TEMPERATURE SENSOR ERROR (WARNING)"},{"k":"252","t":"TEMPERATURE IMPLAUSIBLE"},{"k":"253","t":"REFERENCE SWITCH 10° BLADE ANGLE IMPLAUSIBLE"},{"k":"254","t":"TEMPERATURE GEAR OIL DISTRIBUTOR TOO HIGH"},{"k":"255","t":"GEARBOX FILTER DIRTY MECHANICAL PUMP"},{"k":"256","t":"GEAR OIL PRESSURE MECHANICAL PUMP NOT OK"},{"k":"257","t":"MBL MANUAL OPERATION"},{"k":"258","t":"GEARBOX MANUAL OPERATION"},{"k":"259","t":"CCU COOLING MANUAL OPERATION"},{"k":"260","t":"ANEMOMETER HEATING MANUAL OPERATION"},{"k":"261","t":"MANUAL OPERATION HYDRAULIC SYSTEM / BRAKE"},{"k":"262","t":"MANUAL SNAPSHOT"},{"k":"263","t":"MANUAL OPERATION GENERATOR HEATING"},{"k":"264","t":"MODULE FAILURE PITCH CONTROLLER"},{"k":"265","t":"CONTAINER SUSPENSION"},{"k":"266","t":"VOLTAGE ASYMMETRY 400V"},{"k":"267","t":"GENERATOR BASE VIBRATION"},{"k":"268","t":"COMMUNICATION ERROR ENERGY METER"},{"k":"269","t":"REBOOT PLC"},{"k":"270","t":"FIRE ALARM"},{"k":"271","t":"MALFUNCTION PARTICLE COUNTER"},{"k":"272","t":"SHADOW RELATED SHUT DOWN"},{"k":"273","t":"TOO LONG MANUAL / SERVICE OPERATION"},{"k":"274","t":"PITCH THYRISTOR 1 FAULT"},{"k":"275","t":"PITCH THYRISTOR 2 FAULT"},{"k":"276","t":"PITCH THYRISTOR 3 FAULT"},{"k":"277","t":"POWER LIMITATION DUE TO HIGH TEMPERATURE"},{"k":"278","t":"SHUT-DOWN LOW VOLTAGE"},{"k":"279","t":"LOW VOLTAGE RIDE THROUGH"},{"k":"280","t":"PREPRESSURE ERROR, ACTIVE BRAKE"},{"k":"281","t":"PREPRESSURE WARNING, ACTIVE BRAKE"},{"k":"282","t":"TEST PREPRESSURE ACTIVE BRAKE"},{"k":"283","t":"MALFUNCTION EXTERNAL OIL HEATER"},{"k":"284","t":"EXCESS TEMPERATURE EXTERNAL OIL HEATER"},{"k":"285","t":"TIMEOUT CAN COMMUNICATION TO HUB"},{"k":"286","t":"CROW BAR TRIGGERED CCU"},{"k":"287","t":"POWER LIMITATION CCU"},{"k":"288","t":"RESPONSE SIGNAL INTERRUPT BATTERY DRIVEN PITCHING"},{"k":"289","t":"TEST MEASURING SYSTEM"},{"k":"290","t":"IDLING IN SPEED CONTROL"},{"k":"291","t":"UNDERTEMPERATURE CABINET"},{"k":"292","t":"MALFUNCTION CABINET HEATERS"},{"k":"293","t":"MALFUNCTION TEMP SWITCH CABINET"},{"k":"294","t":"WARNING ADVANCED CONTROL SENSOR"},{"k":"295","t":"HEAT UP STATE"},{"k":"296","t":"MALFUNCTION DIVERTER"},{"k":"297","t":"TURBINE HEAT-UP ERROR"},{"k":"299","t":"BLACKOUT TIME SYNCHRONIZATION"},{"k":"300","t":"GENERATOR GREASE STORAGE TANK EMPTY"},{"k":"301","t":"MALFUNCTION GENERATOR LUBRICATION"},{"k":"302","t":"BRAKE PAD WORN, WARNING"},{"k":"303","t":"MALFUNCTION TIME SWITCH"},{"k":"304","t":"MAIN BEARING GREASE STORAGE TANK EMPTY"},{"k":"305","t":"CONDITION MONITORING VIBRATION WARNING"},{"k":"306","t":"MANUAL OPERATION YAW HYDRAULIC"},{"k":"307","t":"HELICOPTER APPROACH"},{"k":"308","t":"IDLING COMMAND AT WTG"},{"k":"309","t":"IDLING FROM REMOTE CONTROL"},{"k":"310","t":"FAULT RESET"},{"k":"311","t":"FIRE ALARM WARNING"},{"k":"312","t":"FIRE ALARM SENSOR ERROR"},{"k":"313","t":"CABINET OVERTEMPERATURE WARNING"},{"k":"314","t":"POWER LIMITATION FREQUENCY DEPENDENT"},{"k":"315","t":"BURGLARY IN TURBINE"},{"k":"316","t":"BURGLARY CONTROL DEACTIVATED"},{"k":"317","t":"UNDERTEMPERATURE SLIPRING"},{"k":"318","t":"FAULT ADVANCED CONTROLS SENSOR OUT OF FLAT"},{"k":"319","t":"SERVICE SWITCH ROTORLOCK"},{"k":"320","t":"STATOR FILTER FUSES"},{"k":"321","t":"YAW LUBRICATION WARNING"},{"k":"322","t":"BLADE BEARING LUBRICATION WARNING"},{"k":"323","t":"EXCESS TEMPERATURE TOWER BASE"},{"k":"324","t":"ACTIVATION ROTOR LOCK"},{"k":"325","t":"TRANSFORMER OVERPRESSURE"},{"k":"326","t":"LIMIT SWITCH 95° FAULTY"},{"k":"327","t":"LIMIT SWITCH 95° OVERRUN"},{"k":"328","t":"UPS FAULT"},{"k":"329","t":"UPS BATTERY UNDERCAPACITY"},{"k":"330","t":"MBL PRESSURE FAULT"},{"k":"331","t":"MANUAL MODE PPM FAN"},{"k":"332","t":"MANUAL MODE VIBRATION SENSOR"},{"k":"333","t":"RESTART BLOCKED DUE TO LINE FREQUENCY"},{"k":"334","t":"CIRCUIT-BREAKER MAINTENANCE REQUIRED"},{"k":"335","t":"GENERATOR OVERSPEED 2"},{"k":"336","t":"ROTOR OVERSPEED 2"},{"k":"337","t":"LINE CCU TEMPERATURE WARNING"},{"k":"338","t":"ROTOR CCU TEMPERATURE WARNING"},{"k":"339","t":"CCU INITS TURBINE SHUTDOWN"},{"k":"340","t":"BLADE ANGLE CONTROL DEVIATION AXIS 2"},{"k":"341","t":"BLADE ANGLE CONTROL DEVIATION AXIS 3"},{"k":"342","t":"BLADE ANGLE IMPLAUSIBLE AXIS 2"},{"k":"343","t":"BLADE ANGLE IMPLAUSIBLE AXIS 3"},{"k":"344","t":"PITCH FAULT 2 OR 3 BLADES"},{"k":"345","t":"BATTERY-DRIVEN PITCHING AFTER GRID FAULT"},{"k":"346","t":"ROTOR SPEEDS IMPLAUSIBLE"},{"k":"347","t":"POWER LIMITATION BEDPLATE VIBRATION"},{"k":"348","t":"SERVICE STOP"},{"k":"349","t":"SERVICE STOP WITH FAULT"},{"k":"350","t":"SERVICE IDLING COMMAND"},{"k":"351","t":"SERVICE IDLING COMMAND WITH FAULT"},{"k":"352","t":"COMMUNICATION FAULT WIND MEASUREMENT DEVICE"},{"k":"353","t":"MALFUNCTION WIND MEASUREMENT DEVICE"},{"k":"354","t":"D/Q MOMENTS DEVIATION"},{"k":"355","t":"POWER LIMITATION FAULT ADVANCED CONTROLS SENSOR"},{"k":"356","t":"SPEED SENSOR WARNING CU"},{"k":"357","t":"GRID VOLTAGE DROP CU"},{"k":"358","t":"MALFUNCTION TRIPLEPITCH SYSTEM"},{"k":"359","t":"INTERNAL PITCH MODE"},{"k":"360","t":"INTERNAL PITCH MODE IMPLAUSIBLE"},{"k":"361","t":"POWER LIMITATION ADVANCED CONTROLS OFFSETS"},{"k":"362","t":"CALIBRATING ALC SCALES"},{"k":"363","t":"MAPPING ALC HUB OFFSETS"},{"k":"365","t":"SERVICE SWITCH PITCH IMPLAUSIBLE"},{"k":"366","t":"WORSENING AERODYNAMIC BALANCE"},{"k":"367","t":"CCU FAULT AT ABNORMAL GRID CONDITION"},{"k":"368","t":"MSF BENDING LIMITS EXCEEDED"},{"k":"369","t":"LVMD UNDERTEMPERATURE"},{"k":"370","t":"LOW POWER"},{"k":"371","t":"PITCH LIMITATION LOW POWER AVOIDANCE"},{"k":"372","t":"PEAK SHAVER 2 ACTIVE"},{"k":"373","t":"ICE DETECTED VIA LOW POWER"},{"k":"374","t":"ICE DETECTED VIA SCADA"},{"k":"375","t":"ICE DETECTED VIA TOWER VIBRATIONS"},{"k":"377","t":"NV RAM EMPTY"},{"k":"378","t":"NV RAM ERROR"},{"k":"379","t":"BLADE ANGLE ASYMMETRY WITH ACTIVE BAA OPTION"},{"k":"380","t":"GENERATOR CB OPEN"},{"k":"381","t":"GENERATOR CB TRIPPED"},{"k":"382","t":"PROTECTION RELAY TRIPS/OPENS THE MVSG"},{"k":"383","t":"UNCONTROLLED BATTERY TEST"},{"k":"391","t":"AERO BALANCING SATURATION"},{"k":"394","t":"POWER LIMITATION ADVANCED CONTROLS YAW OFFSETS"},{"k":"395","t":"MAPPING ALC YAW OFFSETS"},{"k":"396","t":"ERROR IN YAW MAPPING ALC"},{"k":"397","t":"CCU OUTER COOLING LOW PRESSURE"},{"k":"400","t":"CHECK SAFETY CHAIN"},{"k":"401","t":"SAFETY CHAIN FAILED"},{"k":"402","t":"WIND INERTIA EVENT AT FREQUENCY DIP"},{"k":"403","t":"CBM ALARM"},{"k":"404","t":"CBM WARNING"},{"k":"405","t":"CBM INSTRUMENTATION FAULT"},{"k":"406","t":"CBM COMMUNICATION FAULT"},{"k":"409","t":"ROTOR ANGLE PLAUSIBILITY ERROR"},{"k":"410","t":"UNDER VOLTAGE REACTIVE POWER PROTECTION"},{"k":"411","t":"AUTOMATIC START UP AFTER GRID OUTAGE DISABLED"},{"k":"413","t":"ROTOR POSITION NOT KNOWN"},{"k":"414","t":"POWER REDUCED OPERATION"},{"k":"415","t":"YAW REFERENCE LOST"},{"k":"417","t":"HOLDING WFMS COMMANDS"},{"k":"418","t":"CCU REPORTS: SAFETY CHAIN OPEN"},{"k":"419","t":"CCU REPORTS: GENERATOR OVER SPEED"},{"k":"420","t":"CCU REPORTS: GENERATOR UNDER SPEED"},{"k":"421","t":"CCU REPORTS: PLC HEARTBEAT FAULT"},{"k":"422","t":"CCU REPORTS: LINE CB CLOSE FAIL"},{"k":"423","t":"DIGITAL IO INVERTED OR FORCED"},{"k":"424","t":"SYSTEM RE-INITIALIZATION AFTER GRID OUTAGE"},{"k":"425","t":"LOW GEARBOX OIL LEVEL DETECTED"},{"k":"426","t":"GENERATOR LUBRICATION LONG TERM FAULT"},{"k":"427","t":"HYDRAULIC PUMP ENABLE TIME TOO LONG WARNING"},{"k":"428","t":"HYDRAULIC PUMP INTERVAL TOO SHORT WARNING"},{"k":"429","t":"POWER DE-RATING DUE TO MECHANICAL BRAKE TEST"},{"k":"430","t":"YAW TOOTH SENSOR 1 TIMEOUT"},{"k":"431","t":"YAW TOOTH SENSOR 2 TIMEOUT"},{"k":"432","t":"PITCH SYSTEM SETUP TEST REQUIRED"},{"k":"433","t":"PITCH SYSTEM SETUP TEST ACTIVE"},{"k":"434","t":"PITCH SYSTEM SETUP TEST FAILED FOR AXIS 1"},{"k":"435","t":"PITCH SYSTEM SETUP TEST FAILED FOR AXIS 2"},{"k":"436","t":"PITCH SYSTEM SETUP TEST FAILED FOR AXIS 3"},{"k":"437","t":"PITCH SYSTEM SETUP TEST ABORT FOR AXIS 1"},{"k":"438","t":"PITCH SYSTEM SETUP TEST ABORT FOR AXIS 2"},{"k":"439","t":"PITCH SYSTEM SETUP TEST ABORT FOR AXIS 3"},{"k":"440","t":"PITCH CALIBRATION TRACKING ID CHANGED FOR AXIS 1"},{"k":"441","t":"PITCH CALIBRATION TRACKING ID CHANGED FOR AXIS 2"},{"k":"442","t":"PITCH CALIBRATION TRACKING ID CHANGED FOR AXIS 3"},{"k":"443","t":"BLADE CLEARANCE MODE"},{"k":"445","t":"DIRECTIONAL SECTOR ICE DEPENDENT SHUT-DOWN"},{"k":"446","t":"DIRECTIONAL SECTOR MODE CONDITIONS NOT SAFE"},{"k":"447","t":"PITCH RATE DEVIATION AXIS 1"},{"k":"448","t":"PITCH RATE DEVIATION AXIS 2"},{"k":"449","t":"PITCH RATE DEVIATION AXIS 3"},{"k":"451","t":"MANUAL BRAKE TEST ACTIVATED"},{"k":"452","t":"MANUAL BRAKE TEST NOT EXECUTED DUE TO TURBULENCE"},{"k":"453","t":"OBSTRUCTION LIGHT BACK IN OPERATION"},{"k":"454","t":"OVER TEMPERATURE EXTERNAL SKID CONTROL ROOM"},{"k":"455","t":"SERVICE IDLE COMMAND WITH OK TIME"},{"k":"456","t":"SERVICE CUSTOMER IDLE COMMAND"},{"k":"457","t":"AMBIENT TEMPERATURE TOO HIGH"},{"k":"458","t":"SECONDARY BRAKE TEST PENDING"},{"k":"459","t":"OVER TEMPERATURE EXTERNAL CONVERTER ROOM"},{"k":"460","t":"EXTERNAL TRANSFORMER FAILURE"},{"k":"461","t":"MAIN BEARING LUBRICATION SYSTEM CLOGGED"},{"k":"462","t":"YAW BEARING LUBRICATION SYSTEM CLOGGED"},{"k":"465","t":"SCADA TASK RESTART REQUIRED"},{"k":"466","t":"INITIATE RESTART FOR PITCH GREASING"},{"k":"468","t":"COMMUNICATION LOST TO ALL PITCH AXIS SEVERAL TIMES"},{"k":"469","t":"COMMUNICATION TO ALL PITCH AXIS TIMEOUT LIMIT EXCEEDED"},{"k":"470","t":"FORCED YAWING FOR GREASING"},{"k":"471","t":"TOO LONG NO GREASE FOR YAW BEARING WARNING"},{"k":"472","t":"TOO LONG NO GREASE FOR MAIN BEARING WARNING"},{"k":"473","t":"DRIP LOOP POWER CABLE 1 OVER TEMPERATURE"},{"k":"474","t":"DRIP LOOP POWER CABLE 2 OVER TEMPERATURE"},{"k":"475","t":"FEATURE EXPIRES SOON"},{"k":"476","t":"MAX EBS TEST TIME EXCEEDED"},{"k":"477","t":"WINDFREE OPERATION MALFUNCTION"},{"k":"478","t":"CCU NOT READY FOR OPERATION"},{"k":"479","t":"SOUND POWER MANAGEMENT ENABLED"},{"k":"480","t":"SOUND POWER MANAGEMENT MALFUNCTION"}];
+
+/* ============ PERSONEL ============ */
+var PERSONEL = [
+  "Süleyman Tosun","Hacı Ahmet Aslantaş","Çağrı Adsız",
+  "Durmuş Gülsoy","Bilal Doğan","Osman Alçı","Mustafa Tanboğa","Harun Kaplan"
+];
+
+/* ============ Kurulum ============ */
+// Bugünün tarihi
+(function(){
+  var d = new Date();
+  var ay = String(d.getMonth()+1).padStart(2,"0");
+  var gun = String(d.getDate()).padStart(2,"0");
+  document.getElementById("tarih").value = d.getFullYear()+"-"+ay+"-"+gun;
+})();
+
+// Türbin listesi T01–T54
+(function(){
+  var sel = document.getElementById("turbin");
+  for (var i=1;i<=54;i++){
+    var t = "T"+String(i).padStart(2,"0");
+    var op = document.createElement("option");
+    op.value = t; op.textContent = t;
+    sel.appendChild(op);
+  }
+})();
+
+// Personel: aranabilir seçim
+var seciliPersonel = [];
+var pArama = document.getElementById("personelArama");
+var pSonuc = document.getElementById("personelSonuclar");
+
+function personelCiz(){
+  var kap = document.getElementById("personelSecili");
+  kap.innerHTML = "";
+  seciliPersonel.forEach(function(ad, i){
+    var c = document.createElement("span");
+    c.className = "p-cip";
+    c.innerHTML = ad + ' <button type="button" aria-label="Kaldır">&times;</button>';
+    c.querySelector("button").addEventListener("click", function(){
+      seciliPersonel.splice(i,1); personelCiz();
+    });
+    kap.appendChild(c);
+  });
+}
+
+function personelListele(q){
+  var esles = PERSONEL.filter(function(ad){
+    return seciliPersonel.indexOf(ad) === -1 &&
+           (!q || ad.toLocaleLowerCase("tr").indexOf(q) !== -1);
+  });
+  pSonuc.innerHTML = "";
+  if (!esles.length){ pSonuc.style.display = "none"; return; }
+  esles.forEach(function(ad){
+    var d = document.createElement("div");
+    d.className = "p-sonuc"; d.textContent = ad;
+    d.addEventListener("click", function(){
+      seciliPersonel.push(ad); personelCiz();
+      pArama.value = ""; pSonuc.style.display = "none";
+      pArama.focus();
+    });
+    pSonuc.appendChild(d);
+  });
+  pSonuc.style.display = "block";
+}
+
+pArama.addEventListener("input", function(){
+  personelListele(pArama.value.trim().toLocaleLowerCase("tr"));
+});
+pArama.addEventListener("focus", function(){
+  personelListele(pArama.value.trim().toLocaleLowerCase("tr"));
+});
+document.addEventListener("click", function(e){
+  if (!pSonuc.contains(e.target) && e.target !== pArama) pSonuc.style.display = "none";
+});
+
+// Açıklama hızlı çipleri
+document.querySelectorAll(".hizli-cip").forEach(function(c){
+  c.addEventListener("click", function(){
+    document.querySelectorAll(".hizli-cip").forEach(function(x){ if(x!==c) x.classList.remove("aktif"); });
+    c.classList.toggle("aktif");
+    document.getElementById("aciklama").value = c.classList.contains("aktif") ? c.dataset.metin : "";
+  });
+});
+
+/* ============ Arıza arama ============ */
+var seciliAriza = null;
+var aramaInput = document.getElementById("arizaArama");
+var sonucKutu = document.getElementById("sonuclar");
+
+aramaInput.addEventListener("input", function(){
+  var q = aramaInput.value.trim().toLocaleLowerCase("tr");
+  if (!q){ sonucKutu.style.display="none"; sonucKutu.innerHTML=""; return; }
+  var esles = ARIZALAR.filter(function(a){
+    return a.k.indexOf(q) === 0 || a.t.toLocaleLowerCase("tr").indexOf(q) !== -1;
+  }).slice(0, 30);
+  sonucKutu.innerHTML = "";
+  if (!esles.length){
+    sonucKutu.innerHTML = '<div class="bos-sonuc">Eşleşen kod yok. "Listede yok / diğer arıza" seçeneğini kullanabilirsiniz.</div>';
+  } else {
+    esles.forEach(function(a){
+      var d = document.createElement("div");
+      d.className = "sonuc";
+      d.innerHTML = '<span class="kod">'+a.k+'</span><span class="ad">'+a.t+'</span>';
+      d.addEventListener("click", function(){ arizaSec(a); });
+      sonucKutu.appendChild(d);
+    });
+  }
+  sonucKutu.style.display = "block";
+});
+
+function arizaSec(a){
+  seciliAriza = a;
+  document.getElementById("seciliKod").textContent = a.k;
+  document.getElementById("seciliAd").textContent = a.t;
+  document.getElementById("seciliAriza").style.display = "flex";
+  aramaInput.value = "";
+  sonucKutu.style.display = "none";
+}
+
+document.getElementById("temizleBtn").addEventListener("click", function(){
+  seciliAriza = null;
+  document.getElementById("seciliAriza").style.display = "none";
+});
+
+// "Diğer" alanı
+document.getElementById("digerCheck").addEventListener("change", function(e){
+  document.getElementById("digerAlan").style.display = e.target.checked ? "block" : "none";
+});
+
+/* ============ Gönderim ============ */
+function hata(msj){
+  var k = document.getElementById("hataKutu");
+  k.textContent = msj; k.style.display = "block";
+  k.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+document.getElementById("kaydetBtn").addEventListener("click", function(){
+  document.getElementById("hataKutu").style.display = "none";
+
+  var tarihISO = document.getElementById("tarih").value;
+  var turbin = document.getElementById("turbin").value;
+  var digerAktif = document.getElementById("digerCheck").checked;
+  var digerMetin = document.getElementById("arizaDiger").value.trim();
+  var bas = document.getElementById("baslangic").value;
+  var bit = document.getElementById("bitis").value;
+
+  var kisiler = seciliPersonel.slice();
+  var ek = document.getElementById("ekPersonel").value.trim();
+  if (ek) kisiler.push(ek);
+
+  if (!tarihISO) return hata("Tarih seçin.");
+  if (!turbin) return hata("Türbin seçin.");
+  if (!seciliAriza && !(digerAktif && digerMetin)) return hata("Arıza türü seçin veya 'diğer' alanına yazın.");
+  if (!kisiler.length) return hata("En az bir müdahale eden kişi seçin.");
+  if (!bas || !bit) return hata("Başlangıç ve bitiş saatlerini girin.");
+
+  // Tarih: GG.AA.YYYY formatına çevir (sheet TR yerel ayarı)
+  var p = tarihISO.split("-");
+  var tarihTR = p[2]+"."+p[1]+"."+p[0];
+
+  var veri = {
+    tarih: tarihTR,
+    turbin: turbin,
+    arizaTuru: seciliAriza ? (seciliAriza.k + " - " + seciliAriza.t) : "Diğer",
+    arizaDiger: digerAktif ? digerMetin : "",
+    aciklama: document.getElementById("aciklama").value.trim(),
+    personel: kisiler.join(", "),
+    baslangic: bas,
+    bitis: bit
+  };
+
+  var btn = document.getElementById("kaydetBtn");
+
+  if (!navigator.onLine){
+    return hata("İnternet bağlantısı yok. Bağlantı gelince tekrar deneyin.");
+  }
+
+  btn.disabled = true; btn.textContent = "Gönderiliyor…";
+
+  // Google Form gönderim adresi
+  var FORM_URL = "https://docs.google.com/forms/d/e/FORM_ID_BURAYA/formResponse";
+
+  // Tarih ve saatler Google Form'a parçalanmış formatta gider
+  var tp = tarihISO.split("-"); // [yıl, ay, gün]
+  var bs = bas.split(":");      // [saat, dakika]
+  var bt = bit.split(":");
+
+  var p = new URLSearchParams();
+  p.append("entry.1868723135_year",  tp[0]);
+  p.append("entry.1868723135_month", tp[1]);
+  p.append("entry.1868723135_day",   tp[2]);
+  p.append("entry.1467590466", veri.turbin);
+  p.append("entry.1015740297", veri.arizaTuru);
+  p.append("entry.1981471487", veri.arizaDiger);
+  p.append("entry.10777341",   veri.aciklama);
+  p.append("entry.1079770104", veri.personel);
+  p.append("entry.457672647_hour",   bs[0]);
+  p.append("entry.457672647_minute", bs[1]);
+  p.append("entry.982024261_hour",   bt[0]);
+  p.append("entry.982024261_minute", bt[1]);
+
+  fetch(FORM_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: p.toString()
+  }).then(function(){
+    document.getElementById("form").style.display = "none";
+    document.getElementById("gonderBar").style.display = "none";
+    document.getElementById("basariDetay").textContent =
+      turbin + " · " + veri.arizaTuru + " · " + bas + "–" + bit;
+    document.getElementById("basari").style.display = "block";
+    window.scrollTo(0,0);
+  }).catch(function(){
+    btn.disabled = false; btn.textContent = "Kaydı Gönder";
+    hata("Kayıt gönderilemedi. Bağlantıyı kontrol edip tekrar deneyin.");
+  });
+});
+
+document.getElementById("yeniKayit").addEventListener("click", function(){
+  location.reload();
+});
+</script>
+</body>
+</html>
